@@ -11,6 +11,8 @@ var connections = {};
 
 var fps = 20;
 
+var gravity = 0.2;
+
 app.use('/static', express.static(__dirname + '/static'));
 
 app.get('/', function(request, response) {
@@ -48,17 +50,15 @@ io.on("connection", function(connection) {
     }
   });
   connection.on("fire", function(endX, endY, startX, startY) {
+    dx = (startX - endX) * 0.5;
+    dy = (startY - endY) * 0.5;
     for (var i = 0; i < lobbies.length; i++) {
       if (lobbies[i].hostID == connection.id && lobbies[i].full) {
-        dx = 0;
-        dy = 0;
-        lobbies[i].objects.push(Circle(15,80,dx,dy,3,"red"));
+        lobbies[i].objects.push(Circle(15,80,dx,dy,3,"red","projectile"));
         break;
       }
       if (lobbies[i].playerID == connection.id && lobbies[i].full) {
-        dx = 0;
-        dy = 0;
-        lobbies[i].objects.push(Circle(85,80,dx,dy,3,"yellow"));
+        lobbies[i].objects.push(Circle(85,80,dx,dy,3,"yellow", "projectile"));
         break;
       }
     }
@@ -92,6 +92,7 @@ function Rectangle(_x, _y, _dx, _dy, _width, _height, _colour, _id) {
 
 function updateObjects(objects) {
   for (var i = 0; i < objects.length; i++) {
+    if(objects[i].dy < 2.5 && objects[i].id == "projectile") objects[i].dy += gravity;
     objects[i].x += objects[i].dx;
     objects[i].y += objects[i].dy;
   }

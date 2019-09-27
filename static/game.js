@@ -9,6 +9,8 @@ var host = false;
 var mouseDownX;
 var mouseDownY;
 
+var firing = false;
+
 socket.on('lobbies', function(_lobbies) {
   lobbies = _lobbies;
   updateLobbies();
@@ -60,7 +62,8 @@ function mousePressed() {
 }
 
 function mouseReleased() {
-  if(inLobby) {
+  if(inLobby && firing) {
+    firing = false;
     var point = translatePointToPercentage(mouseX, mouseY);
     socket.emit("fire", point.x, point.y, mouseDownX, mouseDownY);
   }
@@ -107,6 +110,7 @@ function checkClickedTurret(x, y) {
   if (pointCollidesRect(point, turret)) {
     mouseDownX = point.x;
     mouseDownY = point.y;
+    firing = true;
   }
 }
 
