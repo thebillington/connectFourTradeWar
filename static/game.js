@@ -37,6 +37,11 @@ socket.on('gameBoard', function(_gameBoard) {
   gameBoard = _gameBoard;
 });
 
+socket.on('winner', function(_colour) {
+  alert(_colour + " wins!");
+  console.log("DONE");
+});
+
 function setup() {
   createCanvas(windowHeight,windowHeight);
   document.getElementById('lobby').style.width = windowWidth - windowHeight - 4;

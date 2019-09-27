@@ -77,14 +77,14 @@ function startGame(host, player, lobby) {
   lobby.gameBoard = [
     ["", "", "", "", "", "", ""],
     ["", "", "", "", "", "", ""],
-    ["", "", "", "", "", "", ""],
-    ["", "", "", "", "", "", ""],
-    ["", "", "", "", "", "", ""],
-    ["", "", "", "", "", "", ""]
+    ["red", "", "", "", "", "", ""],
+    ["red", "", "", "", "", "", ""],
+    ["red", "", "", "", "", "", ""],
+    ["red", "", "", "", "", "", ""]
   ];
 
   setInterval(function() {
-      updateObjects(lobby.objects, lobby.gameBoard);
+      updateObjects(host, player, lobby.objects, lobby.gameBoard);
       host.emit('objects', lobby.objects);
       player.emit('objects', lobby.objects);
       host.emit('gameBoard', lobby.gameBoard);
@@ -104,7 +104,7 @@ function Rectangle(_x, _y, _dx, _dy, _width, _height, _colour, _id) {
   return {x: _x, y: _y, dx: _dx, dy: _dy, w: _width, h: _height, c: _colour, type: "rect", id: _id};
 }
 
-function updateObjects(objects, gameBoard) {
+function updateObjects(host, player, objects, gameBoard) {
   for (var i = objects.length - 1; i > -1; i--) {
     if(objects[i].dy < 2.5 && objects[i].id == "projectile") objects[i].dy += gravity;
     
@@ -117,7 +117,7 @@ function updateObjects(objects, gameBoard) {
     objects[i].x += objects[i].dx;
     objects[i].y += objects[i].dy;
     if (objects[i].id == "projectile") {
-      checkCollision(objects[i], gameBoard);
+      checkCollision(host, player, objects[i], gameBoard);
       if (objects[i].y > 110) {
         objects.splice(i, 1);
       }
@@ -125,7 +125,7 @@ function updateObjects(objects, gameBoard) {
   }
 }
 
-function checkCollision(circle, gameBoard) {
+function checkCollision(host, player, circle, gameBoard) {
   var collisionColumn = -1;
   for (var i = 0; i < collisionPoints.length; i++) {
     if (pythagoras(circle.x, circle.y, collisionPoints[i], 57.5) < 2) {
@@ -138,6 +138,7 @@ function checkCollision(circle, gameBoard) {
     for (var i = gameBoard.length - 1; i > -1; i--) {
       if (gameBoard[i][collisionColumn] == "") {
         gameBoard[i][collisionColumn] = circle.c;
+        checkWinner(host, player, gameBoard);
         break;
       }
     }
@@ -146,4 +147,34 @@ function checkCollision(circle, gameBoard) {
 
 function pythagoras(x1, y1, x2, y2) {
   return Math.sqrt(Math.pow(Math.abs(x1 - x2), 2) + Math.pow(Math.abs(y1 - y2), 2));
+}
+
+function checkWinner(host, player, gameBoard) {
+  for (var i = 0; i < 6; i++) {
+    for (var j = 0; j < 4; j++) {
+      if (gameBoard[i][j] == "") {
+        continue;
+      }
+      if(gameBoard[i][j] == gameBoard[i][j+1] && gameBoard[i][j] == gameBoard[i][j+2] && gameBoard[i][j] == gameBoard[i][j+3]) {
+        winner(host, player, gameBoard[i][j]);
+        return;
+      }
+    }
+  }
+  for (var i = 0; i < 3; i++) {
+    for (var j = 0; j < 7; j++) {
+      if (gameBoard[i][j] == "") {
+        continue;
+      }
+      if(gameBoard[i][j] == gameBoard[i][j] && gameBoard[i+1][j] == gameBoard[i+2][j] && gameBoard[i][j] == gameBoard[i+3][j]) {
+        winner(host, player, gameBoard[i][j]);
+        return;
+      }
+    }
+  }
+}
+
+function winner(host, player, colour) {
+  host.emit('winner', colour);
+  player.emit('winner', colour);
 }
