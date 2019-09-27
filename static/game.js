@@ -36,14 +36,20 @@ function draw() {
       drawCircle(objects[i]);
     }
     if (objects[i].type == "rect") {
-
+      console.log("HERE");
+      drawRect(objects[i]);
     }
   }
 }
 
 function drawCircle(circle) {
   fill(circle.c);
-  ellipse(circle.x, circle.y, (circle.r / 100) * windowHeight, (circle.r / 100) * windowHeight);
+  ellipse((circle.x/100) * windowHeight, (circle.y/100) * windowHeight, (circle.r / 100) * windowHeight, (circle.r / 100) * windowHeight);
+}
+
+function drawRect(rectangle) {
+  fill(rectangle.c);
+  rect((rectangle.x/100) * windowHeight, (rectangle.y/100) * windowHeight,(rectangle.w/100) * windowHeight,(rectangle.h/100) * windowHeight);
 }
 
 function mouseClicked() {
