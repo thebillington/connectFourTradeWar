@@ -54,11 +54,11 @@ io.on("connection", function(connection) {
     dy = (startY - endY) * 0.5;
     for (var i = 0; i < lobbies.length; i++) {
       if (lobbies[i].hostID == connection.id && lobbies[i].full) {
-        lobbies[i].objects.push(Circle(15,80,dx,dy,3,"red","projectile"));
+        lobbies[i].objects.push(Circle(15,80,dx,dy,3.5,"red","projectile"));
         break;
       }
       if (lobbies[i].playerID == connection.id && lobbies[i].full) {
-        lobbies[i].objects.push(Circle(85,80,dx,dy,3,"yellow", "projectile"));
+        lobbies[i].objects.push(Circle(85,80,dx,dy,3.5,"yellow", "projectile"));
         break;
       }
     }
@@ -66,20 +66,32 @@ io.on("connection", function(connection) {
 });
 
 function startGame(host, player, lobby) {
+
   lobby.objects = [
-    Rectangle(10, 80, 0, 0, 10, 5, "grey", "hostTurret"),
-    Rectangle(80, 80, 0, 0, 10, 5, "grey", "playerTurret")
+    Rectangle(5, 80, 0, 0, 5, 5, "grey", "hostTurret"),
+    Rectangle(85, 80, 0, 0, 5, 5, "grey", "playerTurret")
+  ];
+
+  lobby.gameBoard = [
+    ["", "", "", "", "", "", ""],
+    ["", "", "", "", "", "", ""],
+    ["", "", "", "", "", "", ""],
+    ["", "", "", "", "", "", ""],
+    ["", "", "", "", "", "", ""],
+    ["", "", "", "", "", "", ""]
   ];
 
   setInterval(function() {
       updateObjects(lobby.objects);
       host.emit('objects', lobby.objects);
       player.emit('objects', lobby.objects);
+      host.emit('gameBoard', lobby.gameBoard);
+      player.emit('gameBoard', lobby.gameBoard);
     }, 1000/fps);
 }
 
 function Lobby(connectionID, hostName) {
-  return {hostID: connectionID, playerID: null, host: hostName, full: false, objects: []};
+  return {hostID: connectionID, playerID: null, host: hostName, full: false, objects: [], gameBoard: []};
 }
 
 function Circle(_x, _y, _dx, _dy, _radius, _colour, _id) {
@@ -91,9 +103,12 @@ function Rectangle(_x, _y, _dx, _dy, _width, _height, _colour, _id) {
 }
 
 function updateObjects(objects) {
-  for (var i = 0; i < objects.length; i++) {
+  for (var i = objects.length - 1; i > -1; i--) {
     if(objects[i].dy < 2.5 && objects[i].id == "projectile") objects[i].dy += gravity;
     objects[i].x += objects[i].dx;
     objects[i].y += objects[i].dy;
+    if (objects[i].y < 10) {
+      objects.splice(i, 1);
+    }
   }
 }

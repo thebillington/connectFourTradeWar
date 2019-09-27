@@ -1,6 +1,14 @@
 var socket = io();
 var objects = [];
 var lobbies = [];
+var gameBoard = [
+  ["", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", ""]
+];
 var username;
 
 var inLobby = false;
@@ -25,6 +33,10 @@ socket.on('inLobby', function(_inLobby) {
   document.getElementById('createLobby').style.display = "none";
 });
 
+socket.on('gameBoard', function(_gameBoard) {
+  gameBoard = _gameBoard;
+});
+
 function setup() {
   createCanvas(windowHeight,windowHeight);
   document.getElementById('lobby').style.width = windowWidth - windowHeight - 4;
@@ -43,16 +55,32 @@ function draw() {
       drawRect(objects[i]);
     }
   }
+  drawGameBoard();
 }
 
 function drawCircle(circle) {
   fill(circle.c);
+  if (circle.c == "") {
+    fill("white");
+  }
   ellipse((circle.x/100) * windowHeight, (circle.y/100) * windowHeight, (circle.r / 100) * windowHeight, (circle.r / 100) * windowHeight);
 }
 
 function drawRect(rectangle) {
   fill(rectangle.c);
   rect((rectangle.x/100) * windowHeight, (rectangle.y/100) * windowHeight, (rectangle.w/100) * windowHeight, (rectangle.h/100) * windowHeight);
+}
+
+function drawGameBoard() {
+  drawRect({x: 34, y: 57.5, w: 32, h: 27.5, c: "blue"});
+  var size = 4;
+  _y = 60;
+  for (var i = 0; i < 6; i++) {
+    _x = 36.5;
+    for (var j = 0; j < 7; j++) {
+      drawCircle({x: _x + (size + 0.5) * j, y: _y + (size + 0.5) * i, r: size, c: gameBoard[i][j]});
+    }
+  }
 }
 
 function mousePressed() {
