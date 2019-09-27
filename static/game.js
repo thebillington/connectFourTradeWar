@@ -1,5 +1,4 @@
 var socket = io();
-
 var objects = [];
 
 socket.on('objects', function(_objects) {
@@ -7,12 +6,14 @@ socket.on('objects', function(_objects) {
 });
 
 function setup() {
-  createCanvas(400,400);
+  createCanvas(windowHeight,windowHeight);
+  document.getElementById('lobby').style.width = windowWidth - windowHeight - 4;
+  document.getElementById('lobby').style.height = windowHeight - 4;
 }
 
 function draw() {
   clear();
-  console.log(objects);
+  background(220);
   for (var i = 0; i < objects.length; i++) {
     if (objects[i].type == "circle") {
       drawCircle(objects[i]);
@@ -24,9 +25,8 @@ function draw() {
 }
 
 function drawCircle(circle) {
-  console.log(circle);
   fill(circle.c);
-  ellipse(circle.x, circle.y, circle.r, circle.r);
+  ellipse(circle.x, circle.y, (circle.r / 100) * windowHeight, (circle.r / 100) * windowHeight);
 }
 
 function mouseClicked() {
