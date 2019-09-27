@@ -13,6 +13,8 @@ var fps = 20;
 
 var gravity = 0.2;
 
+var collisionPoints = [36.5, 41, 45.5, 50, 54.5, 59, 63.5];
+
 app.use('/static', express.static(__dirname + '/static'));
 
 app.get('/', function(request, response) {
@@ -82,7 +84,7 @@ function startGame(host, player, lobby) {
   ];
 
   setInterval(function() {
-      updateObjects(lobby.objects);
+      updateObjects(lobby.objects, lobby.gameBoard);
       host.emit('objects', lobby.objects);
       player.emit('objects', lobby.objects);
       host.emit('gameBoard', lobby.gameBoard);
@@ -102,21 +104,46 @@ function Rectangle(_x, _y, _dx, _dy, _width, _height, _colour, _id) {
   return {x: _x, y: _y, dx: _dx, dy: _dy, w: _width, h: _height, c: _colour, type: "rect", id: _id};
 }
 
-function updateObjects(objects) {
+function updateObjects(objects, gameBoard) {
   for (var i = objects.length - 1; i > -1; i--) {
     if(objects[i].dy < 2.5 && objects[i].id == "projectile") objects[i].dy += gravity;
     
-    if (objects[i].dx > 0 && objects[i].y > 60 && objects[i].x > 31 && objects[i].x < 37) {
+    if (objects[i].dx > 0 && objects[i].y > 57.5 && objects[i].x > 31 && objects[i].x < 37) {
       objects[i].dx *= -1;
     }
-    if (objects[i].dx < 0 && objects[i].y > 60 && objects[i].x > 63 && objects[i].x < 69) {
+    if (objects[i].dx < 0 && objects[i].y > 57.5 && objects[i].x > 63 && objects[i].x < 69) {
       objects[i].dx *= -1;
     }
-    
     objects[i].x += objects[i].dx;
     objects[i].y += objects[i].dy;
-    if (objects[i].y > 110) {
-      objects.splice(i, 1);
+    if (objects[i].id == "projectile") {
+      checkCollision(objects[i], gameBoard);
+      if (objects[i].y > 110) {
+        objects.splice(i, 1);
+      }
     }
   }
+}
+
+function checkCollision(circle, gameBoard) {
+  var collisionColumn = -1;
+  for (var i = 0; i < collisionPoints.length; i++) {
+    if (pythagoras(circle.x, circle.y, collisionPoints[i], 57.5) < 2) {
+      collisionColumn = i;
+      circle.y = 115;
+      break;
+    }
+  }
+  if (collisionColumn != -1) {
+    for (var i = gameBoard.length - 1; i > -1; i--) {
+      if (gameBoard[i][collisionColumn] == "") {
+        gameBoard[i][collisionColumn] = circle.c;
+        break;
+      }
+    }
+  }
+}
+
+function pythagoras(x1, y1, x2, y2) {
+  return Math.sqrt(Math.pow(Math.abs(x1 - x2), 2) + Math.pow(Math.abs(y1 - y2), 2));
 }
