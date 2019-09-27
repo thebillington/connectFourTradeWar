@@ -68,8 +68,8 @@ io.on("connection", function(connection) {
 function startGame(host, player, lobby) {
 
   lobby.objects = [
-    Rectangle(5, 80, 0, 0, 5, 5, "grey", "hostTurret"),
-    Rectangle(85, 80, 0, 0, 5, 5, "grey", "playerTurret")
+    Rectangle(5, 80, 0, 0, 10, 5, "grey", "hostTurret"),
+    Rectangle(85, 80, 0, 0, 10, 5, "grey", "playerTurret")
   ];
 
   lobby.gameBoard = [
@@ -105,9 +105,17 @@ function Rectangle(_x, _y, _dx, _dy, _width, _height, _colour, _id) {
 function updateObjects(objects) {
   for (var i = objects.length - 1; i > -1; i--) {
     if(objects[i].dy < 2.5 && objects[i].id == "projectile") objects[i].dy += gravity;
+    
+    if (objects[i].dx > 0 && objects[i].y > 60 && objects[i].x > 31 && objects[i].x < 37) {
+      objects[i].dx *= -1;
+    }
+    if (objects[i].dx < 0 && objects[i].y > 60 && objects[i].x > 63 && objects[i].x < 69) {
+      objects[i].dx *= -1;
+    }
+    
     objects[i].x += objects[i].dx;
     objects[i].y += objects[i].dy;
-    if (objects[i].y < 10) {
+    if (objects[i].y > 110) {
       objects.splice(i, 1);
     }
   }
