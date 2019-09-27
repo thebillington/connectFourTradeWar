@@ -7,7 +7,7 @@ var server = http.Server(app);
 var io = socketIO(server);app.set('port', 5000);
 
 var lobbies = [];
-connections = {};
+var connections = {};
 
 var fps = 20;
 
@@ -47,15 +47,28 @@ io.on("connection", function(connection) {
       startGame(connections[lobby.hostID], connection, lobby);
     }
   });
-  // connection.on("fire", function(x,y, dx, dy) {
-  //   objects.push(Circle(x,y,dx,dy,2,"red"));
-  // });
+  connection.on("fire", function(endX, endY, startX, startY) {
+    for (var i = 0; i < lobbies.length; i++) {
+      if (lobbies[i].hostID == connection.id && lobbies[i].full) {
+        dx = 0;
+        dy = 0;
+        lobbies[i].objects.push(Circle(15,80,dx,dy,3,"red"));
+        break;
+      }
+      if (lobbies[i].playerID == connection.id && lobbies[i].full) {
+        dx = 0;
+        dy = 0;
+        lobbies[i].objects.push(Circle(85,80,dx,dy,3,"yellow"));
+        break;
+      }
+    }
+  });
 });
 
 function startGame(host, player, lobby) {
   lobby.objects = [
-    Rectangle(10, 80, 0, 0, 10, 5, "grey", "turret"),
-    Rectangle(80, 80, 0, 0, 10, 5, "grey", "turret")
+    Rectangle(10, 80, 0, 0, 10, 5, "grey", "hostTurret"),
+    Rectangle(80, 80, 0, 0, 10, 5, "grey", "playerTurret")
   ];
 
   setInterval(function() {

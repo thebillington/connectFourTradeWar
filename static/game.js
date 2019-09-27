@@ -4,6 +4,10 @@ var lobbies = [];
 var username;
 
 var inLobby = false;
+var host = false;
+
+var mouseDownX;
+var mouseDownY;
 
 socket.on('lobbies', function(_lobbies) {
   lobbies = _lobbies;
@@ -15,10 +19,8 @@ socket.on('objects', function(_objects) {
 });
 
 socket.on('inLobby', function(_inLobby) {
-  inLobby = inLobby;
-  if (inLobby) {
-    document.getElementById('createLobby').style.display = "none";
-  }
+  inLobby = _inLobby;
+  document.getElementById('createLobby').style.display = "none";
 });
 
 function setup() {
@@ -36,7 +38,6 @@ function draw() {
       drawCircle(objects[i]);
     }
     if (objects[i].type == "rect") {
-      console.log("HERE");
       drawRect(objects[i]);
     }
   }
@@ -49,11 +50,20 @@ function drawCircle(circle) {
 
 function drawRect(rectangle) {
   fill(rectangle.c);
-  rect((rectangle.x/100) * windowHeight, (rectangle.y/100) * windowHeight,(rectangle.w/100) * windowHeight,(rectangle.h/100) * windowHeight);
+  rect((rectangle.x/100) * windowHeight, (rectangle.y/100) * windowHeight, (rectangle.w/100) * windowHeight, (rectangle.h/100) * windowHeight);
 }
 
-function mouseClicked() {
-  socket.emit("fire", mouseX, mouseY, 0, 0);
+function mousePressed() {
+  if(inLobby) {
+    checkClickedTurret(mouseX, mouseY);
+  }
+}
+
+function mouseReleased() {
+  if(inLobby) {
+    var point = translatePointToPercentage(mouseX, mouseY);
+    socket.emit("fire", point.x, point.y, mouseDownX, mouseDownY);
+  }
 }
 
 function updateLobbies() {
@@ -75,6 +85,7 @@ function createLobby() {
     socket.emit("newLobby", username);
     inLobby = true;
     document.getElementById('createLobby').style.display = "none";
+    host = true;
   }
 }
 
@@ -85,3 +96,24 @@ function joinLobby(host) {
 function newID() {
   return '_' + Math.random().toString(36).substr(2, 9);
 };
+
+function checkClickedTurret(x, y) {
+  if (host) {
+    var turret = objects[0];
+  } else {
+    turret = objects[1];
+  }
+  var point = translatePointToPercentage(x,y);
+  if (pointCollidesRect(point, turret)) {
+    mouseDownX = point.x;
+    mouseDownY = point.y;
+  }
+}
+
+function pointCollidesRect(point, rect) {
+  return point.x > rect.x && point.x < rect.x + rect.w && point.y > rect.y && point.y < rect.y + rect.h;
+}
+
+function translatePointToPercentage(x, y) {
+  return {x: (x / windowHeight) * 100, y: (y / windowHeight) * 100};
+}
